@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Icebreaker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+            border-top: 4px solid #006272;
+        }
+        
+        h1 {
+            color: #1a1a1a;
+            margin-bottom: 10px;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        
+        .subtitle {
+            color: #4a4a4a;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .question-box {
+            background: #f0f8f9;
+            border-left: 4px solid #006272;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-radius: 0;
+        }
+        
+        .question-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #006272;
+            font-weight: 700;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+        
+        .question-text {
+            font-size: 18px;
+            color: #1a1a1a;
+            line-height: 1.6;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #1a1a1a;
+            font-weight: 600;
+        }
+        
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #d1d1d1;
+            border-radius: 0;
+            font-size: 16px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="text"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #006272;
+        }
+        
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        button {
+            background: #006272;
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 0;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background: #004d5a;
+        }
+        
+        button:active {
+            background: #003842;
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            background: #999;
+        }
+        
+        .success-message {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            color: #155724;
+            padding: 15px;
+            border-radius: 0;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 0;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #4a4a4a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Team Icebreaker</h1>
+        <p class="subtitle">Answer your randomly assigned question</p>
+        
+        <div id="loading" class="loading">
+            <p>Loading your question...</p>
+        </div>
+        
+        <form id="icebreakerForm" style="display: none;">
+            <div class="question-box">
+                <div class="question-label">Your Question</div>
+                <div class="question-text" id="questionText"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="answer">Your Answer</label>
+                <textarea id="answer" name="answer" required placeholder="Share your thoughts..."></textarea>
+            </div>
+            
+            <button type="submit" id="submitBtn">Submit Answer</button>
+            
+            <div class="success-message" id="successMessage">
+                ✓ Thank you! Your answer has been submitted successfully.
+            </div>
+            
+            <div class="error-message" id="errorMessage">
+                ✗ Something went wrong. Please try again.
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const questions = [
+            "Who is the main character?",
+            "What is the main character holding?",
+            "Who is the main character with?",
+            "What is the character holding?",
+            "Where is this taking place? (name a location)",
+            "What is taking place in the background of the poster?",
+            "What is the theme/style of the poster?"
+        ];
+
+        let assignedQuestion = null;
+        let questionIndex = null;
+
+        async function initializeForm() {
+            try {
+                // Get URL parameter for user assignment
+                const urlParams = new URLSearchParams(window.location.search);
+                const userId = urlParams.get('user');
+                
+                if (userId) {
+                    // Use URL parameter to determine question
+                    questionIndex = parseInt(userId) % questions.length;
+                } else {
+                    // Generate random assignment based on timestamp
+                    const seed = Date.now();
+                    questionIndex = seed % questions.length;
+                }
+                
+                assignedQuestion = questions[questionIndex];
+                
+                document.getElementById('questionText').textContent = assignedQuestion;
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('icebreakerForm').style.display = 'block';
+                
+            } catch (error) {
+                console.error('Error initializing form:', error);
+                document.getElementById('loading').innerHTML = '<p style="color: red;">Error loading form. Please refresh the page.</p>';
+            }
+        }
+
+        document.getElementById('icebreakerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const successMsg = document.getElementById('successMessage');
+            const errorMsg = document.getElementById('errorMessage');
+            
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+            successMsg.style.display = 'none';
+            errorMsg.style.display = 'none';
+            
+            const answer = document.getElementById('answer').value.trim();
+            
+            try {
+                const timestamp = new Date().toISOString();
+                const responseData = {
+                    question: assignedQuestion,
+                    questionIndex: questionIndex,
+                    answer: answer,
+                    timestamp: timestamp
+                };
+                
+                // Save to storage with shared access
+                const key = `response:${timestamp}:${questionIndex}`;
+                const result = await window.storage.set(key, JSON.stringify(responseData), true);
+                
+                if (result) {
+                    successMsg.style.display = 'block';
+                    document.getElementById('icebreakerForm').reset();
+                    submitBtn.textContent = 'Submit Another Answer';
+                } else {
+                    throw new Error('Storage operation failed');
+                }
+                
+            } catch (error) {
+                console.error('Error submitting response:', error);
+                errorMsg.style.display = 'block';
+                submitBtn.textContent = 'Submit Answer';
+            } finally {
+                submitBtn.disabled = false;
+            }
+        });
+
+        // Initialize on load
+        initializeForm();
+    </script>
+</body>
+</html>

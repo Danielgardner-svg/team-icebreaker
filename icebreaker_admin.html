@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Icebreaker Responses - Admin</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            border-radius: 0;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-top: 4px solid #006272;
+        }
+        
+        h1 {
+            color: #1a1a1a;
+            margin-bottom: 10px;
+            font-size: 32px;
+            font-weight: 600;
+        }
+        
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-box {
+            background: #006272;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 0;
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .prompt-section {
+            background: #f0f8f9;
+            border-left: 4px solid #006272;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        
+        .prompt-section h2 {
+            color: #1a1a1a;
+            font-size: 18px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .prompt-box {
+            background: white;
+            border: 2px solid #d1d1d1;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.8;
+            color: #1a1a1a;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .prompt-placeholder {
+            color: #6c757d;
+            font-style: italic;
+        }
+        
+        .copy-button {
+            margin-top: 10px;
+            width: auto;
+        }
+        
+        button {
+            background: #006272;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 0;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background: #004d5a;
+        }
+        
+        button.secondary {
+            background: #6c757d;
+        }
+        
+        button.secondary:hover {
+            background: #5a6268;
+        }
+        
+        .responses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        
+        .response-card {
+            background: white;
+            border-radius: 0;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: box-shadow 0.2s;
+            animation: fadeIn 0.3s ease-in;
+            border-left: 4px solid #006272;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .response-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .response-header {
+            display: flex;
+            justify-content: flex-end;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+        
+        .response-time {
+            font-size: 12px;
+            color: #6c757d;
+            font-weight: 600;
+        }
+        
+        .response-question {
+            background: #f0f8f9;
+            border-left: 4px solid #006272;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 0;
+            font-size: 14px;
+            color: #4a4a4a;
+            font-style: italic;
+        }
+        
+        .response-answer {
+            color: #1a1a1a;
+            line-height: 1.6;
+            font-size: 15px;
+        }
+        
+        .no-responses {
+            background: white;
+            border-radius: 0;
+            padding: 60px;
+            text-align: center;
+            color: #6c757d;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .no-responses-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #4a4a4a;
+            padding: 40px;
+            font-size: 18px;
+            background: white;
+            border-radius: 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Team Icebreaker Responses</h1>
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="stat-label">Total Responses</div>
+                    <div class="stat-value" id="totalCount">0</div>
+                </div>
+            </div>
+            <div class="controls">
+                <button onclick="loadResponses()">🔄 Refresh</button>
+                <button class="secondary" onclick="clearAllResponses()">🗑️ Clear All Data</button>
+                <button class="secondary" onclick="toggleAutoRefresh()">
+                    <span id="autoRefreshText">▶️ Auto-Refresh</span>
+                </button>
+            </div>
+            
+            <div class="prompt-section">
+                <h2>Generated Prompt</h2>
+                <div class="prompt-box" id="generatedPrompt">
+                    <span class="prompt-placeholder">Waiting for all responses...</span>
+                </div>
+                <button class="copy-button" onclick="copyPrompt()" id="copyButton" style="display: none;">
+                    📋 Copy Prompt
+                </button>
+            </div>
+        </div>
+        
+        <div id="loading" class="loading">Loading responses...</div>
+        <div id="responsesContainer" style="display: none;"></div>
+    </div>
+
+    <script>
+        let autoRefreshInterval = null;
+        let isAutoRefresh = false;
+
+        async function loadResponses() {
+            const container = document.getElementById('responsesContainer');
+            const loading = document.getElementById('loading');
+            
+            try {
+                // List all response keys
+                const result = await window.storage.list('response:', true);
+                
+                if (!result || !result.keys || result.keys.length === 0) {
+                    loading.style.display = 'none';
+                    container.style.display = 'block';
+                    container.innerHTML = `
+                        <div class="no-responses">
+                            <div class="no-responses-icon">📭</div>
+                            <h2>No responses yet</h2>
+                            <p>Responses will appear here as team members submit their answers.</p>
+                        </div>
+                    `;
+                    updateStats(0);
+                    
+                    // Update prompt section
+                    document.getElementById('generatedPrompt').innerHTML = '<span class="prompt-placeholder">Waiting for all responses... (0/7 answered)</span>';
+                    document.getElementById('copyButton').style.display = 'none';
+                    return;
+                }
+                
+                // Fetch all responses
+                const responses = [];
+                for (const key of result.keys) {
+                    try {
+                        const data = await window.storage.get(key, true);
+                        if (data && data.value) {
+                            const parsed = JSON.parse(data.value);
+                            responses.push(parsed);
+                        }
+                    } catch (error) {
+                        console.error(`Error loading response ${key}:`, error);
+                    }
+                }
+                
+                // Sort by timestamp (newest first)
+                responses.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                
+                // Update stats
+                updateStats(responses.length);
+                
+                // Generate prompt
+                generatePrompt(responses);
+                
+                // Render responses
+                loading.style.display = 'none';
+                container.style.display = 'block';
+                container.innerHTML = `
+                    <div class="responses-grid">
+                        ${responses.map(response => createResponseCard(response)).join('')}
+                    </div>
+                `;
+                
+            } catch (error) {
+                console.error('Error loading responses:', error);
+                loading.innerHTML = '<p style="color: #dc3545;">Error loading responses. Please refresh the page.</p>';
+            }
+        }
+
+        function createResponseCard(response) {
+            const date = new Date(response.timestamp);
+            const timeString = date.toLocaleString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit'
+            });
+            
+            return `
+                <div class="response-card">
+                    <div class="response-header">
+                        <div class="response-time">${timeString}</div>
+                    </div>
+                    <div class="response-question">${escapeHtml(response.question)}</div>
+                    <div class="response-answer">${escapeHtml(response.answer)}</div>
+                </div>
+            `;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function updateStats(total) {
+            document.getElementById('totalCount').textContent = total;
+        }
+        
+        function generatePrompt(responses) {
+            const promptBox = document.getElementById('generatedPrompt');
+            const copyButton = document.getElementById('copyButton');
+            
+            // Create answer map by question index
+            const answerMap = {};
+            responses.forEach(r => {
+                answerMap[r.questionIndex] = r.answer;
+            });
+            
+            // Check if we have all 7 answers
+            const allAnswered = [0, 1, 2, 3, 4, 5, 6].every(i => answerMap[i]);
+            
+            if (allAnswered) {
+                const prompt = `I want you to create a movie poster, the main character is ${answerMap[0]}, the main character is holding ${answerMap[1]}, they are with character two who is ${answerMap[2]}, character two is holding ${answerMap[3]}, both characters are located at ${answerMap[4]}, behind them ${answerMap[5]} event is going on, this poster should be in the style of ${answerMap[6]}.`;
+                
+                promptBox.textContent = prompt;
+                promptBox.classList.remove('prompt-placeholder');
+                copyButton.style.display = 'inline-block';
+            } else {
+                const answeredCount = Object.keys(answerMap).length;
+                promptBox.innerHTML = `<span class="prompt-placeholder">Waiting for all responses... (${answeredCount}/7 answered)</span>`;
+                copyButton.style.display = 'none';
+            }
+        }
+        
+        function copyPrompt() {
+            const promptText = document.getElementById('generatedPrompt').textContent;
+            navigator.clipboard.writeText(promptText).then(() => {
+                const btn = document.getElementById('copyButton');
+                const originalText = btn.textContent;
+                btn.textContent = '✓ Copied!';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                alert('Failed to copy to clipboard');
+            });
+        }
+
+        async function clearAllResponses() {
+            if (!confirm('Are you sure you want to delete ALL responses? This cannot be undone.')) {
+                return;
+            }
+            
+            try {
+                const result = await window.storage.list('response:', true);
+                if (result && result.keys) {
+                    for (const key of result.keys) {
+                        await window.storage.delete(key, true);
+                    }
+                }
+                loadResponses();
+            } catch (error) {
+                console.error('Error clearing responses:', error);
+                alert('Error clearing data. Please try again.');
+            }
+        }
+
+        function toggleAutoRefresh() {
+            isAutoRefresh = !isAutoRefresh;
+            const btn = document.getElementById('autoRefreshText');
+            
+            if (isAutoRefresh) {
+                btn.textContent = '⏸️ Stop Auto-Refresh';
+                autoRefreshInterval = setInterval(loadResponses, 5000); // Refresh every 5 seconds
+            } else {
+                btn.textContent = '▶️ Auto-Refresh';
+                if (autoRefreshInterval) {
+                    clearInterval(autoRefreshInterval);
+                    autoRefreshInterval = null;
+                }
+            }
+        }
+
+        // Initial load
+        loadResponses();
+    </script>
+</body>
+</html>
